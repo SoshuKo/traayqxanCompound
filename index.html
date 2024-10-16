@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>チャーイクハン諸語複合名詞作成機</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        label, p { margin: 10px 0; }
+        input, select, button { margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+    <h1>チャーイクハン諸語複合名詞作成機</h1>
+    <p>名詞の場合は単数形・主格を、動詞・形容詞の場合は不定形を入力してください（=辞書に載っている形を入力してください）。</p>
+    <p>自動詞とは辞書形の語尾が-m, -am、他動詞とは辞書形の語尾が-um, -imのものです。</p>
+
+    <label for="wordA">単語A:</label>
+    <input type="text" id="wordA"><br>
+
+    <label for="wordB">単語B:</label>
+    <input type="text" id="wordB"><br>
+
+    <label for="typeSelect">単語の組み合わせ:</label>
+    <select id="typeSelect">
+        <option value="noun+noun">名詞+名詞</option>
+        <option value="adj/iv+N">形容詞/自動詞分詞+名詞</option>
+        <option value="tv+N">他動詞分詞+名詞</option>
+    </select><br>
+
+    <label for="aspectSelect">相の選択:</label>
+    <select id="aspectSelect">
+        <option value="imperfective">未完了相</option>
+        <option value="perfective">完了相</option>
+    </select><br>
+
+    <label for="pluralCheck">複数形</label>
+    <input type="checkbox" id="pluralCheck"><br>
+
+    <label for="oneWordCheck">1語にする</label>
+    <input type="checkbox" id="oneWordCheck"><br>
+
+    <button onclick="generateCompound()">作成する</button>
+
+    <p id="output"></p>
+
+    <script>
+        function replaceVowels(word) {
+            return word.replace(/ā/g, 'a').replace(/ē/g, 'e').replace(/ī/g, 'i').replace(/ō/g, 'o').replace(/ū/g, 'u');
+        }
+
+        function generateCompound() {
+            let wordA = document.getElementById("wordA").value.trim();
+            let wordB = document.getElementById("wordB").value.trim();
+            const type = document.getElementById("typeSelect").value;
+            const aspect = document.getElementById("aspectSelect").value;
+            const plural = document.getElementById("pluralCheck").checked;
+            const oneWord = document.getElementById("oneWordCheck").checked;
+
+            // 単語Aのみに母音置換を適用
+            wordA = replaceVowels(wordA);
+
+            // 名詞+名詞
+            if (type === "noun+noun") {
+                if (plural) {
+                    if (/[ei]/.test(wordB)) {
+                        wordA += "ren";
+                    } else {
+                        wordA += "ron";
+                    }
+                } else {
+                    if (/[ei]/.test(wordB)) {
+                        wordA += "ne";
+                    } else {
+                        wordA += "no";
+                    }
+                }
+            }
+
+            // 形容詞/自動詞分詞+名詞
+            if (type === "adj/iv+N") {
+                wordA = wordA.replace(/-?m$/, "").replace(/-?am$/, "");  // 語尾処理
+                if (plural) {
+                    wordA += (aspect === "imperfective") ? "sala" : "salla";
+                } else {
+                    wordA += (aspect === "imperfective") ? "sa" : "sla";
+                }
+            }
+
+            // 他動詞分詞+名詞
+            if (type === "tv+N") {
+                wordA = wordA.replace(/-?um$/, "").replace(/-?im$/, "");  // 語尾処理
+                if (plural) {
+                    wordA += (aspect === "imperfective") ? "xala" : "xalla";
+                } else {
+                    wordA += (aspect === "imperfective") ? "xa" : "xra";
+                }
+            }
+
+            // 複数形処理
+            if (plural) {
+                wordB += "ra";
+            }
+
+            let result = oneWord ? wordA + wordB : wordA + " " + wordB;
+
+            // 15文字を超える場合の注意書き
+            if (result.length > 15) {
+                result += "（「一語にする」をオフにすることを推奨します）";
+            }
+
+            document.getElementById("output").innerText = result;
+        }
+    </script>
+</body>
+</html>
